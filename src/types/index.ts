@@ -1,45 +1,37 @@
 // src/types/index.ts
 
-// Enum for Reservation Status 
-export enum ReservationStatus {
-  Pending = 'Pending',
-  Approved = 'Approved',
-  Rejected = 'Rejected',
-}
+// Union Type instead of Enum (Erasable Syntax Safe)
+export type ReservationStatus = 'Pending' | 'Approved' | 'Rejected';
 
-// Auth Response 
+export type UserRole = 'Student' | 'Professor' | 'Admin';
+
+// Auth Response
 export interface AuthResponse {
   Token: string;
   UserId: number;
-  Role: 'Student' | 'Professor' | 'Admin';
+  Role: UserRole;
   IdentityNumber: string;
 }
 
-// Room Entity  
+// Room Entity
 export interface Room {
   Id: number;
-  Name: string; // e.g., "Lab A"
-  Sector: string; // e.g., "West Wing"
-  Capacity: number; // Range 1-1000
-  IsAvailable?: boolean; // For maintenance mode
-  IsDeleted?: boolean; // Soft delete flag
+  Name: string;
+  Sector: string;
+  Capacity: number;
+  IsAvailable?: boolean;
+  IsDeleted?: boolean;
 }
 
-// Reservation Entity 
+// Reservation Entity
 export interface Reservation {
   Id: number;
   RoomId: number;
   UserId: number;
-  UserName?: string; // Optional for display in Admin/History views
-  RoomName?: string; // Optional for display
-  StartTime: string; // ISO DateTime string
-  EndTime: string;   // ISO DateTime string
+  UserName?: string;
+  RoomName?: string;
+  StartTime: string;
+  EndTime: string;
   Purpose: string;
   Status: ReservationStatus;
-}
-
-// API Error Response Structure
-export interface ApiError {
-  message: string;
-  [key: string]: any;
 }
