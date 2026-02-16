@@ -1,6 +1,6 @@
 // src/types/index.ts
 
-export type ReservationStatus = 'Pending' | 'Approved' | 'Rejected';
+export type ReservationStatus = 'Pending' | 'Approved' | 'Rejected' | 'Cancelled';
 export type UserRole = 'Student' | 'Professor' | 'Admin';
 
 export interface AuthResponse {
@@ -29,4 +29,14 @@ export interface Reservation {
   endTime: string;
   purpose: string;
   status: ReservationStatus;
+}
+
+export interface UserProfile {
+  id: number;
+  name: string;
+  identityNumber: string;
+  role: UserRole;
+  department?: string;       // Shared attribute
+  degree?: string;           // Student specific
+  managementPosition?: string; // Professor specific
 }
