@@ -1,5 +1,6 @@
 // src/utils/jwt.ts
 export interface DecodedToken {
+    sub?: string;
   nameid?: string; // User ID
   unique_name?: string; // User Name
   role?: string; // User Role
