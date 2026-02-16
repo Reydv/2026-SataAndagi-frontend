@@ -33,25 +33,27 @@ export default function RoomFeed({ rooms, isLoading, onBook }: RoomFeedProps) {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {rooms.map((room) => (
         <div 
-          key={room.Id} 
+          key={room.id} // FIX: camelCase
           className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
         >
           <div>
             <div className="flex justify-between items-start mb-2">
-              <h3 className="text-lg font-bold text-gray-900">{room.Name}</h3>
+              {/* FIX: camelCase name, sector */}
+              <h3 className="text-lg font-bold text-gray-900">{room.name}</h3>
               <span className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full font-medium">
-                {room.Sector}
+                {room.sector}
               </span>
             </div>
             
             <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
               <span className="flex items-center gap-1">
                 <Users className="w-4 h-4" />
-                {room.Capacity} ppl
+                {room.capacity} {/* FIX: camelCase */}
+                ppl
               </span>
               <span className="flex items-center gap-1">
                 <MapPin className="w-4 h-4" />
-                {room.Sector}
+                {room.sector} {/* FIX: camelCase */}
               </span>
             </div>
           </div>

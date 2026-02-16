@@ -1,30 +1,32 @@
 // src/components/SearchBar.tsx
 import React, { useState, useEffect } from 'react';
 import { Search, Clock, Users, MapPin, Calendar } from 'lucide-react';
+import { getLocalISOString } from '../utils/date';
 
 interface SearchFilters {
   startTime: string;
   duration: number;
   sector: string;
-  minCapacity: number;
+  minCapacity: number; // Changed to allow empty state handling
   search: string;
 }
 
 interface SearchBarProps {
   onSearch: (filters: SearchFilters) => void;
+  availableSectors: string[]; // FIX: Receive dynamic sectors
 }
 
-export default function SearchBar({ onSearch }: SearchBarProps) {
-  // Default State: Start Now, 180 min duration
+export default function SearchBar({ onSearch, availableSectors }: SearchBarProps) {
+  // FIX: Default duration 150, Step 10, Local Time
   const [filters, setFilters] = useState<SearchFilters>({
-    startTime: new Date().toISOString().slice(0, 16), // Format: YYYY-MM-DDTHH:mm
-    duration: 180,
+    startTime: getLocalISOString(),
+    duration: 150,
     sector: '',
     minCapacity: 0,
     search: ''
   });
 
-  // Debounce search to prevent excessive API calls
+  // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       onSearch(filters);
@@ -34,10 +36,14 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFilters(prev => ({
-      ...prev,
-      [name]: name === 'duration' || name === 'minCapacity' ? Number(value) : value
-    }));
+    
+    // FIX: Handle Number inputs to avoid "030"
+    if (name === 'minCapacity' || name === 'duration') {
+       const numValue = value === '' ? 0 : parseInt(value, 10);
+       setFilters(prev => ({ ...prev, [name]: isNaN(numValue) ? 0 : numValue }));
+    } else {
+       setFilters(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   return (
@@ -59,7 +65,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           </div>
         </div>
 
-        {/* 2. Duration */}
+        {/* 2. Duration (Fix: Step 10) */}
         <div>
           <label className="block text-xs font-medium text-gray-500 mb-1">Duration (Min)</label>
           <div className="relative">
@@ -67,8 +73,8 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
             <input
               type="number"
               name="duration"
-              min="15"
-              step="15"
+              min="10"
+              step="10"
               value={filters.duration}
               onChange={handleChange}
               className="pl-9 w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
@@ -76,7 +82,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           </div>
         </div>
 
-        {/* 3. Sector */}
+        {/* 3. Sector (Fix: Dynamic) */}
         <div>
           <label className="block text-xs font-medium text-gray-500 mb-1">Location</label>
           <div className="relative">
@@ -88,14 +94,14 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
               className="pl-9 w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
             >
               <option value="">All Sectors</option>
-              <option value="West Wing">West Wing</option>
-              <option value="East Wing">East Wing</option>
-              <option value="Main Hall">Main Hall</option>
+              {availableSectors.map((sec) => (
+                <option key={sec} value={sec}>{sec}</option>
+              ))}
             </select>
           </div>
         </div>
 
-        {/* 4. Min Capacity */}
+        {/* 4. Min Capacity (Fix: UX "030") */}
         <div>
           <label className="block text-xs font-medium text-gray-500 mb-1">Min Capacity</label>
           <div className="relative">
@@ -105,7 +111,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
               name="minCapacity"
               min="0"
               placeholder="0"
-              value={filters.minCapacity}
+              value={filters.minCapacity === 0 ? '' : filters.minCapacity} 
               onChange={handleChange}
               className="pl-9 w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
             />

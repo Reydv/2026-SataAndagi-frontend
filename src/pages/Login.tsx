@@ -1,5 +1,5 @@
 // src/pages/Login.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Import useEffect
 import { useNavigate } from 'react-router-dom';
 import { Lock, User } from 'lucide-react';
 import api from '../services/api';
@@ -7,31 +7,38 @@ import type { AuthResponse } from '../types';
 
 export default function Login() {
   const navigate = useNavigate();
+  // ... state definitions ...
   const [identity, setIdentity] = useState('');
   const [password, setPassword] = useState('');
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // FIX: Redirect if already authenticated
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      navigate('/', { replace: true });
+    }
+  }, [navigate]);
+
   const handleLogin = async (e: React.FormEvent) => {
+    // ... same as before ...
     e.preventDefault();
     setIsLoading(true);
     setIsError(false);
 
     try {
-      // API Integration [cite: 80]
       const { data } = await api.post<AuthResponse>('/auth/login', {
-        IdentityNumber: identity,
+        IdentityNumber: identity, // Keep PascalCase for BODY if backend expects it (check Postman Body)
         Password: password,
       });
 
-      // Store Token & User Info
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data));
-
-      // Redirect to Dashboard [cite: 130]
-      navigate('/');
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data));
+        navigate('/');
+      }
     } catch (err) {
-      // Trigger Shake Animation [cite: 129]
       setIsError(true);
       setTimeout(() => setIsError(false), 500);
     } finally {
@@ -39,8 +46,10 @@ export default function Login() {
     }
   };
 
+  // ... return JSX ...
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      // ... same JSX ...
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <div 
         className={`bg-white w-full max-w-md p-8 rounded-xl shadow-lg transform transition-all ${
           isError ? 'animate-shake ring-2 ring-red-500' : ''
@@ -107,8 +116,6 @@ export default function Login() {
             {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
-        
-        {/* No Registration Option  */}
       </div>
     </div>
   );
