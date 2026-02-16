@@ -1,20 +1,20 @@
 // src/pages/Dashboard.tsx
 import { useState, useCallback, useMemo } from 'react';
+import { LogOut, User } from 'lucide-react'; // Import Icons
 import HistoryList from '../components/HistoryList';
 import SearchBar from '../components/SearchBar';
 import RoomFeed from '../components/RoomFeed';
 import BookingModal from '../components/BookingModal';
 import api from '../services/api';
 import type { Room } from '../types';
-import { getLocalISOString } from '../utils/date';
 
 export default function Dashboard() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(false);
   
-  // Search State (Default needed for Modal)
+  // Search State
   const [searchState, setSearchState] = useState({
-    startTime: new Date().toISOString().slice(0, 16), // Fallback
+    startTime: new Date().toISOString().slice(0, 16),
     duration: 150
   });
 
@@ -23,7 +23,11 @@ export default function Dashboard() {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [refreshHistoryTrigger, setRefreshHistoryTrigger] = useState(0);
 
-  // Helper (Same as before)
+  // Get User Name for Display
+  const userString = localStorage.getItem('user');
+  const user = userString ? JSON.parse(userString) : { name: 'User' };
+
+  // Helper
   const toLocalISOString = (date: Date) => {
     const offset = date.getTimezoneOffset() * 60000;
     const localDate = new Date(date.getTime() - offset);
@@ -37,7 +41,7 @@ export default function Dashboard() {
 
   const handleSearch = useCallback(async (filters: any) => {
     setLoading(true);
-    setSearchState({ startTime: filters.startTime, duration: filters.duration }); // SAVE STATE
+    setSearchState({ startTime: filters.startTime, duration: filters.duration });
     
     const start = new Date(filters.startTime);
     const end = new Date(start.getTime() + filters.duration * 60000);
@@ -60,23 +64,51 @@ export default function Dashboard() {
     }
   }, []);
 
-  // Open Modal
   const handleBookClick = (room: Room) => {
     setSelectedRoom(room);
     setIsBookingOpen(true);
   };
 
-  // Handle Success
   const handleBookingSuccess = () => {
-    setRefreshHistoryTrigger(prev => prev + 1); // Trigger History Reload
-    // Optional: Re-fetch availability?
-    // handleSearch({ ...currentFilters }); 
+    setRefreshHistoryTrigger(prev => prev + 1);
+  };
+
+  // Logout Function
+  const handleLogout = () => {
+    if (confirm("Are you sure you want to logout?")) {
+      localStorage.clear();
+      window.location.href = '/login';
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      <div className="sticky top-0 z-40 bg-white border-b border-gray-200">
-        {/* Pass Trigger */}
+      
+      {/* Sticky Top Section: Header + History */}
+      <div className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+        
+        {/* New Header Bar */}
+        <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            <div className="bg-blue-100 p-2 rounded-full">
+               <User className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+                <h1 className="text-sm font-bold text-gray-800 leading-tight">Hi, {user.name}</h1>
+                <p className="text-xs text-gray-500">Student / Staff</p>
+            </div>
+          </div>
+
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
+          </button>
+        </div>
+
+        {/* History List (Still Sticky context) */}
         <HistoryList refreshTrigger={refreshHistoryTrigger} />
       </div>
 
@@ -90,12 +122,11 @@ export default function Dashboard() {
           <RoomFeed 
             rooms={rooms} 
             isLoading={loading} 
-            onBook={handleBookClick} // Connect Click
+            onBook={handleBookClick}
           />
         </div>
       </main>
 
-      {/* Booking Modal */}
       <BookingModal
         isOpen={isBookingOpen}
         onClose={() => setIsBookingOpen(false)}
