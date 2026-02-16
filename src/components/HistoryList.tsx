@@ -1,21 +1,26 @@
 // src/components/HistoryList.tsx
 import { useEffect, useState } from 'react';
-import { Trash2, Clock, CheckCircle, XCircle, Calendar } from 'lucide-react';
+import { Trash2, Clock, CheckCircle, XCircle, Calendar, Eye } from 'lucide-react';
 import api from '../services/api';
 import type { Reservation } from '../types';
 import ConfirmationModal from './ConfirmationModal';
+import ReservationDetailModal from './ReservationDetailModal'; // Import New Modal
 
 export default function HistoryList() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // State for Delete
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Fetch History
+  // State for View Detail
+  const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
+
   const fetchHistory = async () => {
     try {
       const { data } = await api.get<Reservation[]>('/reservations', {
-        params: { status: 'Pending', page: 1, pageSize: 50 } // As per Blueprint Zone 1
+        params: { page: 1, pageSize: 50 } 
       });
       setReservations(data);
     } catch (error) {
@@ -29,13 +34,12 @@ export default function HistoryList() {
     fetchHistory();
   }, []);
 
-  // Handle Delete
   const confirmDelete = async () => {
     if (!deleteId) return;
     setIsDeleting(true);
     try {
       await api.delete(`/reservations/${deleteId}`);
-      setReservations((prev) => prev.filter((r) => r.Id !== deleteId));
+      setReservations((prev) => prev.filter((r) => r.id !== deleteId));
       setDeleteId(null);
     } catch (error) {
       alert("Failed to cancel reservation");
@@ -70,26 +74,28 @@ export default function HistoryList() {
           My Active Requests
         </h2>
 
-        {/* Horizontal Scroll Container */}
         {reservations.length === 0 ? (
-          <div className="text-gray-400 italic text-sm">No active reservations found.</div>
+          <div className="text-gray-400 italic text-sm">No reservations found.</div>
         ) : (
           <div className="flex overflow-x-auto pb-4 gap-4 snap-x scrollbar-hide">
             {reservations.map((res) => (
               <div 
-                key={res.Id} 
-                className="flex-shrink-0 w-72 bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm snap-start relative group"
+                key={res.id} 
+                onClick={() => setSelectedReservation(res)} // CLICK CARD TO OPEN DETAIL
+                className="flex-shrink-0 w-72 bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm snap-start relative group cursor-pointer hover:border-blue-400 hover:shadow-md transition-all"
               >
-                {/* Header */}
                 <div className="flex justify-between items-start mb-2">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 border ${getStatusColor(res.Status)}`}>
-                    {getStatusIcon(res.Status)}
-                    {res.Status}
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 border ${getStatusColor(res.status)}`}>
+                    {getStatusIcon(res.status)}
+                    {res.status}
                   </span>
                   
-                  {res.Status === 'Pending' && (
+                  {res.status === 'Pending' && (
                     <button 
-                      onClick={() => setDeleteId(res.Id)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent opening modal when clicking trash
+                        setDeleteId(res.id);
+                      }}
                       className="text-gray-400 hover:text-red-500 transition-colors p-1"
                       title="Cancel Reservation"
                     >
@@ -98,14 +104,18 @@ export default function HistoryList() {
                   )}
                 </div>
 
-                {/* Body */}
-                <h3 className="font-semibold text-gray-900 truncate" title={res.RoomName || 'Unknown Room'}>
-                  {res.RoomName || `Room #${res.RoomId}`}
+                <h3 className="font-semibold text-gray-900 truncate" title={res.roomName || 'Unknown Room'}>
+                  {res.roomName || `Room #${res.roomId}`}
                 </h3>
                 <div className="text-xs text-gray-500 mt-1 space-y-1">
-                  <p>Start: {new Date(res.StartTime).toLocaleString()}</p>
-                  <p>End: {new Date(res.EndTime).toLocaleString()}</p>
-                  <p className="italic truncate" title={res.Purpose}>"{res.Purpose}"</p>
+                  <p>Start: {new Date(res.startTime).toLocaleString()}</p>
+                  <p>End: {new Date(res.endTime).toLocaleString()}</p>
+                  <p className="italic truncate" title={res.purpose}>"{res.purpose}"</p>
+                </div>
+                
+                {/* Visual Hint */}
+                <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Eye className="w-4 h-4 text-blue-400" />
                 </div>
               </div>
             ))}
@@ -113,13 +123,20 @@ export default function HistoryList() {
         )}
       </div>
 
+      {/* Delete Confirmation */}
       <ConfirmationModal
         isOpen={!!deleteId}
         onClose={() => setDeleteId(null)}
         onConfirm={confirmDelete}
         title="Cancel Reservation"
-        message="Are you sure you want to cancel this reservation request? This action cannot be undone."
+        message="Are you sure you want to cancel this reservation request?"
         isLoading={isDeleting}
+      />
+
+      {/* Detail Modal */}
+      <ReservationDetailModal 
+        reservation={selectedReservation}
+        onClose={() => setSelectedReservation(null)}
       />
     </div>
   );
