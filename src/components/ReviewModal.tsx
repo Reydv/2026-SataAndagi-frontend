@@ -25,25 +25,27 @@ export default function ReviewModal({ reservationId, onClose, onDecision }: Revi
   useEffect(() => {
     if (!reservationId) return;
     
-    setIsEditing(false); // Reset Edit Mode
+    setIsEditing(false);
 
     const loadData = async () => {
       setLoading(true);
       try {
-        const resResponse = await api.get<Reservation>(`/reservations/${reservationId}`);
-        setReservation(resResponse.data);
+        const resResponse = await api.get<any>(`/reservations/${reservationId}`);
+        const data = resResponse.data;
+        setReservation(data);
 
-        // Prep Edit Form
+        // Initialize form with what we have (RoomId might be missing here)
         setEditForm({
-            roomId: resResponse.data.roomId,
-            startTime: resResponse.data.startTime,
-            endTime: resResponse.data.endTime,
-            purpose: resResponse.data.purpose,
-            status: resResponse.data.status
+            roomId: data.roomId || data.RoomId || 0, // Likely 0
+            startTime: data.startTime || data.StartTime,
+            endTime: data.endTime || data.EndTime,
+            purpose: data.purpose || data.Purpose,
+            status: data.status || data.Status
         });
 
-        if (resResponse.data.userId) {
-          const userResponse = await api.get<UserProfile>(`/users/${resResponse.data.userId}`);
+        const userId = data.userId || data.UserId;
+        if (userId) {
+          const userResponse = await api.get<UserProfile>(`/users/${userId}`);
           setUserProfile(userResponse.data);
         }
       } catch (error) {
@@ -59,8 +61,17 @@ export default function ReviewModal({ reservationId, onClose, onDecision }: Revi
   const toggleEditMode = async () => {
     if (!isEditing) {
         try {
-            const { data } = await api.get<Room[]>('/rooms');
-            setAvailableRooms(data);
+            // Fetch all rooms to populate dropdown
+            const { data: rooms } = await api.get<Room[]>('/rooms');
+            setAvailableRooms(rooms);
+
+            // FIX: If we don't have a RoomID yet, find it by matching the Name
+            if ((!editForm.roomId || editForm.roomId === 0) && reservation?.roomName) {
+                const matchedRoom = rooms.find(r => r.name === reservation.roomName);
+                if (matchedRoom) {
+                    setEditForm(prev => ({ ...prev, roomId: matchedRoom.id }));
+                }
+            }
         } catch (e) {
             console.error("Could not load rooms");
         }
@@ -68,22 +79,36 @@ export default function ReviewModal({ reservationId, onClose, onDecision }: Revi
     setIsEditing(!isEditing);
   };
 
-  // Handle Save (PUT)
   const handleSaveChanges = async () => {
     setProcessing(true);
     try {
+        // SAFETY CHECK: Ensure we found a valid Room ID
+        if (!editForm.roomId || editForm.roomId === 0) {
+            alert("System Error: Could not identify the current room. Please select a room from the dropdown manually.");
+            setProcessing(false);
+            return;
+        }
+
+        const formatForApi = (dateStr: string) => {
+            if (!dateStr) return new Date().toISOString(); 
+            return dateStr.length === 16 ? `${dateStr}:00` : dateStr;
+        };
+
         await api.put(`/reservations/${reservationId}`, {
-            RoomId: editForm.roomId,
-            StartTime: editForm.startTime,
-            EndTime: editForm.endTime,
+            RoomId: Number(editForm.roomId),
+            StartTime: formatForApi(editForm.startTime), 
+            EndTime: formatForApi(editForm.endTime),     
             Purpose: editForm.purpose,
             Status: editForm.status
         });
-        onDecision(); // Refresh Parent
+
+        onDecision(); 
         onClose();
         alert("Reservation updated successfully.");
-    } catch (error) {
-        alert("Failed to update reservation.");
+    } catch (error: any) {
+        console.error("Update failed:", error);
+        const msg = error.response?.data || "Failed to update reservation.";
+        alert(typeof msg === 'string' ? msg : "Failed to update reservation.");
     } finally {
         setProcessing(false);
     }
