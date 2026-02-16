@@ -29,6 +29,7 @@ export interface Reservation {
   endTime: string;
   purpose: string;
   status: ReservationStatus;
+  createdAt?: string;
 }
 
 export interface UserProfile {
