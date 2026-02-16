@@ -71,32 +71,42 @@ export default function RoomInventory() {
         ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {rooms.map((room) => (
-                    <div key={room.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow relative group">
+                    <div key={room.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow relative group bg-white">
                         <div className="flex justify-between items-start">
                             <div>
                                 <h3 className="font-bold text-gray-900">{room.name}</h3>
                                 <p className="text-sm text-gray-500">{room.sector}</p>
                             </div>
-                            <span className="text-xs font-mono bg-gray-100 px-2 py-1 rounded">
+                            <span className="text-xs font-mono bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-100">
                                 Cap: {room.capacity}
                             </span>
                         </div>
 
-                        <div className="mt-2 flex items-center gap-2">
-                            <span className={`w-2 h-2 rounded-full ${room.isAvailable ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                            <span className="text-xs text-gray-500">
-                                {room.isAvailable ? 'Active' : 'Maintenance'}
-                            </span>
-                        </div>
+                        <div className="mt-4 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <span className={`w-2 h-2 rounded-full ${room.isAvailable ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                                <span className="text-xs text-gray-500">
+                                    {room.isAvailable ? 'Active' : 'Maintenance'}
+                                </span>
+                            </div>
 
-                        {/* Actions (Visible on Hover) */}
-                        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white p-1 rounded shadow-sm border">
-                            <button onClick={() => openEdit(room)} className="text-blue-500 hover:text-blue-700">
-                                <Edit2 className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => handleDelete(room.id)} className="text-red-500 hover:text-red-700">
-                                <Trash2 className="w-4 h-4" />
-                            </button>
+                            {/* MOVED: Bottom Right Position */}
+                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button 
+                                    onClick={() => openEdit(room)} 
+                                    className="p-1.5 text-blue-600 hover:bg-blue-50 rounded border border-gray-200 hover:border-blue-200"
+                                    title="Edit"
+                                >
+                                    <Edit2 className="w-4 h-4" />
+                                </button>
+                                <button 
+                                    onClick={() => handleDelete(room.id)} 
+                                    className="p-1.5 text-red-600 hover:bg-red-50 rounded border border-gray-200 hover:border-red-200"
+                                    title="Delete"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 ))}
