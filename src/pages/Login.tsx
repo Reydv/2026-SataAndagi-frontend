@@ -25,7 +25,7 @@ export default function Login() {
       });
 
       // Store Token & User Info
-      localStorage.setItem('token', data.Token);
+      localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data));
 
       // Redirect to Dashboard [cite: 130]

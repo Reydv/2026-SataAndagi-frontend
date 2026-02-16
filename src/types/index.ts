@@ -7,7 +7,7 @@ export type UserRole = 'Student' | 'Professor' | 'Admin';
 
 // Auth Response
 export interface AuthResponse {
-  Token: string;
+  token: string;
   UserId: number;
   Role: UserRole;
   IdentityNumber: string;
