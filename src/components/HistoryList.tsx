@@ -6,7 +6,11 @@ import type { Reservation } from '../types';
 import ConfirmationModal from './ConfirmationModal';
 import ReservationDetailModal from './ReservationDetailModal'; // Import New Modal
 
-export default function HistoryList() {
+interface HistoryListProps {
+  refreshTrigger?: number; // ADD THIS
+}
+
+export default function HistoryList({ refreshTrigger = 0 }: HistoryListProps) {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -29,6 +33,11 @@ export default function HistoryList() {
       setLoading(false);
     }
   };
+
+  // UPDATE useEffect to listen to refreshTrigger
+  useEffect(() => {
+    fetchHistory();
+  }, [refreshTrigger]);
 
   useEffect(() => {
     fetchHistory();
