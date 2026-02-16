@@ -1,6 +1,7 @@
 // src/pages/Dashboard.tsx
 import { useState, useCallback, useMemo } from 'react';
-import { LogOut, User } from 'lucide-react'; // Import Icons
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { LogOut, User, LayoutDashboard } from 'lucide-react'; // Import Icon
 import HistoryList from '../components/HistoryList';
 import SearchBar from '../components/SearchBar';
 import RoomFeed from '../components/RoomFeed';
@@ -9,25 +10,23 @@ import api from '../services/api';
 import type { Room } from '../types';
 
 export default function Dashboard() {
+  const navigate = useNavigate(); // Initialize hook
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(false);
   
-  // Search State
   const [searchState, setSearchState] = useState({
     startTime: new Date().toISOString().slice(0, 16),
     duration: 150
   });
 
-  // Booking State
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [refreshHistoryTrigger, setRefreshHistoryTrigger] = useState(0);
 
-  // Get User Name for Display
+  // Get User Data
   const userString = localStorage.getItem('user');
-  const user = userString ? JSON.parse(userString) : { name: 'User' };
+  const user = userString ? JSON.parse(userString) : { name: 'User', role: 'Student' };
 
-  // Helper
   const toLocalISOString = (date: Date) => {
     const offset = date.getTimezoneOffset() * 60000;
     const localDate = new Date(date.getTime() - offset);
@@ -73,7 +72,6 @@ export default function Dashboard() {
     setRefreshHistoryTrigger(prev => prev + 1);
   };
 
-  // Logout Function
   const handleLogout = () => {
     if (confirm("Are you sure you want to logout?")) {
       localStorage.clear();
@@ -84,10 +82,9 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       
-      {/* Sticky Top Section: Header + History */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
         
-        {/* New Header Bar */}
+        {/* Header Bar */}
         <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center border-b border-gray-100">
           <div className="flex items-center gap-2">
             <div className="bg-blue-100 p-2 rounded-full">
@@ -95,20 +92,33 @@ export default function Dashboard() {
             </div>
             <div>
                 <h1 className="text-sm font-bold text-gray-800 leading-tight">Hi, {user.name}</h1>
-                <p className="text-xs text-gray-500">Student / Staff</p>
+                {/* FIX: Dynamic Role Display */}
+                <p className="text-xs text-gray-500 font-medium">{user.role || 'Member'}</p>
             </div>
           </div>
 
-          <button 
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </button>
+          <div className="flex items-center gap-2">
+            {/* FIX: Admin Panel Button */}
+            {user.role === 'Admin' && (
+              <button 
+                onClick={() => navigate('/admin')}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors border border-gray-200"
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                Admin Panel
+              </button>
+            )}
+
+            <button 
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-100"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+          </div>
         </div>
 
-        {/* History List (Still Sticky context) */}
         <HistoryList refreshTrigger={refreshHistoryTrigger} />
       </div>
 
