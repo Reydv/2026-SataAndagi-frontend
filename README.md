@@ -1,73 +1,100 @@
-# React + TypeScript + Vite
+# 2026-SataAndagi-frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Description
+The Frontend service for the **Sata Andagi** facility management system. This application provides a modern, responsive web interface for Students and Professors to search for rooms and manage bookings, while offering Administrators a comprehensive dashboard for approvals and inventory management. It connects to the ASP.NET Core Backend via RESTful APIs.
 
-Currently, two official plugins are available:
+## Features
+* **Authentication & Security**:
+    * Secure Login page with JWT token handling.
+    * **Protected Routes**: Automatically redirects unauthenticated users or those without correct permissions.
+* **User Dashboard**:
+    * **Active Request Tracking**: View current booking status (Pending, Approved, Rejected).
+    * **Sticky Header**: Persistent navigation for search and profile tools.
+    * **Profile Integration**: Displays user details (NRP/NIP).
+* **Smart Room Search**:
+    * Filter rooms by **Time**, **Duration**, **Sector**, and **Capacity**.
+    * Real-time availability visualization.
+* **Booking Management**:
+    * **BookingModal**: Submit reservation requests without leaving the search page.
+* **Admin Panel**:
+    * **Admin Inbox**: Review incoming requests with status filtering.
+    * **ReviewModal**: Approve/Reject requests with conflict warnings.
+    * **Room Inventory**: UI for Adding, Editing, and Soft-Deleting rooms.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tech Stack
+* **Framework**: React 19
+* **Build Tool**: Vite
+* **Language**: TypeScript
+* **Styling**: Tailwind CSS
+* **Routing**: React Router DOM
+* **State/Fetching**: Axios, React Hooks
 
-## React Compiler
+## Prerequisites
+* [Node.js (LTS Version)](https://nodejs.org/en)
+* [NPM](https://www.npmjs.com/)
+* Git
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Installation
 
-## Expanding the ESLint configuration
+1.  **Clone the Repository**
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+    git clone https://github.com/pens-pbl/2026-SataAndagi-frontend.git
+    cd 2026-SataAndagi-frontend
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+2.  **Install Dependencies**
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+    npm install
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+3.  **Configure Environment**
+    Create a `.env` file based on `.env.example`.
+    *(See Environment Variables section below)*.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+4.  **Run Development Server**
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+    npm run dev
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Usage
+
+### Starting the Client
+
+    npm run dev
+
+The application will be available at http://localhost:5173
+
+### Build for Production
+
+    npm run build
+
+The output will be generated in the `dist/` folder.
+
+## Environment Variables
+Ensure your `.env` file is configured to point to your running Backend service:
+
+    # Base URL for the ASP.NET Core Backend API
+    VITE_API_BASE_URL=http://localhost:5000/api
+
+## Contributing
+
+1.  **Branching Strategy**
+    * `main`: Production-ready code.
+    * `develop`: Integration branch.
+    * `feature/<name>`: New UI features.
+    * `fix/<name>`: Bug fixes.
+
+2.  **Commit Messages**
+    * `feat: add booking modal component`
+    * `style: apply tailwind classes to navbar`
+    * `fix: resolve cors error in api service`
+
+3.  **Workflow**
+    1.  Pick an Issue from the GitHub Project Board.
+    2.  Create a branch from `develop`.
+    3.  Develop and test components.
+    4.  Commit changes.
+    5.  Push to origin and Open a Pull Request to `develop`.
+
+## License
+Distributed under the MIT License.
+
+## Authors
+* **PBL Team 2026** - *Initial Work*
