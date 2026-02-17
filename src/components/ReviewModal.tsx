@@ -69,7 +69,7 @@ export default function ReviewModal({ reservationId, onClose, onDecision }: Revi
             if ((!editForm.roomId || editForm.roomId === 0) && reservation?.roomName) {
                 const matchedRoom = rooms.find(r => r.name === reservation.roomName);
                 if (matchedRoom) {
-                    setEditForm(prev => ({ ...prev, roomId: matchedRoom.id }));
+                    setEditForm((prev: any) => ({ ...prev, roomId: matchedRoom.id }));
                 }
             }
         } catch (e) {
